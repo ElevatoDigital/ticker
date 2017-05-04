@@ -28,7 +28,7 @@ class Ticker
 
     public function init($requestContainer = null, $requestName = 'TICKER', $startTime = null)
     {
-        $container = ($requestContainer ?: $_REQUEST);
+        $container = ($requestContainer ?: $_COOKIE);
 
         if (isset($container[$requestName]) && $container[$requestName]) {
             $tickerJson = base64_decode($container[$requestName]);
