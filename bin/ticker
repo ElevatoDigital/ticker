@@ -1,0 +1,80 @@
+#!/usr/bin/env php
+<?php
+
+use React\Socket\ConnectionInterface;
+use React\EventLoop\Factory as EventLoopFactory;
+use React\Socket\Server as SocketServer;
+
+if ('cli' !== php_sapi_name()) {
+    exit;
+}
+
+if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    require_once __DIR__ . '/../vendor/autoload.php';
+} else {
+    require_once __DIR__ . '/../../../autoload.php';
+}
+
+function error($text)
+{
+    echo str_repeat('*', 74) . PHP_EOL;
+    echo $text . PHP_EOL;
+    echo str_repeat('*', 74) . PHP_EOL;
+}
+
+$loop   = EventLoopFactory::create();
+$socket = new SocketServer($loop);
+$key    = bin2hex(random_bytes(12));
+
+$socket->listen(0);
+
+$socket->on(
+    'connection',
+    function (ConnectionInterface $connection) use ($key) {
+        $connection->on(
+            'data',
+            function ($json) use ($key) {
+                $data = json_decode($json, true);
+
+                if (!isset($data['key']) || $key !== $data['key']) {
+                    error('Invalid key used to send timing data.');
+                    return;
+                }
+
+                printf(
+                    "%-40s | %12sms | %12sms" . PHP_EOL,
+                    $data['id'],
+                    floor($data['fromStart'] * 1000),
+                    floor($data['fromLastEvent'] * 1000)
+                );
+            }
+        );
+    }
+);
+
+$port = $socket->getPort();
+
+printf(
+    'document.cookie = "TICKER=%s"' . PHP_EOL,
+    base64_encode(
+        json_encode(
+            [
+                'port' => $port,
+                'key'  => $key
+            ]
+        )
+    )
+);
+
+echo PHP_EOL;
+
+printf(
+    "%-40s | %-12s   | %-12s  " . PHP_EOL,
+    'Event',
+    'From Start',
+    'From Previous'
+);
+
+echo str_repeat('-', 74) . PHP_EOL;
+
+$loop->run();
