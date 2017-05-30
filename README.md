@@ -50,6 +50,7 @@ Then, use your browser to trigger the application code, and the Ticker output sh
     something                                |          261ms |            0ms
     something else                           |         2262ms |         2000ms
     request-ended                            |         3792ms |         1529ms
+    --------------------------------------------------------------------------
 
 As you can see, in addition to the custom events that we specified, Ticker provides some built-in events that
 correspond to the start of the request, when Ticker was started, and when the request ended.

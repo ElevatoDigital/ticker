@@ -22,6 +22,11 @@ function error($text)
     echo str_repeat('*', 74) . PHP_EOL;
 }
 
+function printDivider()
+{
+    echo str_repeat('-', 74) . PHP_EOL;
+}
+
 $loop   = EventLoopFactory::create();
 $socket = new SocketServer($loop);
 $key    = bin2hex(random_bytes(12));
@@ -47,6 +52,10 @@ $socket->on(
                     floor($data['fromStart'] * 1000),
                     floor($data['fromLastEvent'] * 1000)
                 );
+
+                if ('request-ended' === $data['id']) {
+                    printDivider();
+                }
             }
         );
     }
@@ -75,6 +84,6 @@ printf(
     'From Previous'
 );
 
-echo str_repeat('-', 74) . PHP_EOL;
+printDivider();
 
 $loop->run();
